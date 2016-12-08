@@ -55,7 +55,7 @@ def assign(X, Y, centers):
               assigned to the cluster of that index (i.e. index 0 contains a
               list of coordinates assigned to the first center)
     """
-    nearests = [list(), list(), list()]
+    nearests = [list() for c in centers]
     for (x, y) in zip(X, Y):
         dists = [math.sqrt((x - cx) ** 2 + (y - cy) ** 2) for (cx, cy) in centers]
         index = dists.index(min(dists))
@@ -63,7 +63,7 @@ def assign(X, Y, centers):
     return nearests
 
 
-def adjust(neighbors):
+def adjust(center, neighbors):
     """Calculates the mean coordinates of a list of (x, y) tuples
 
     Used to calculate the new position of a cluster center
@@ -103,7 +103,7 @@ def main():
     while True:
         # Move each center to the mean position of its assigned points
         neighbors = assign(X_train, Y_train, centers)
-        new_centers = [adjust(n) for n in neighbors]
+        new_centers = [adjust(c, n) for c, n in zip(centers, neighbors)]
 
         # Plot the movement of the centers
         pyplot.plot(X_train, Y_train, 'gx')
