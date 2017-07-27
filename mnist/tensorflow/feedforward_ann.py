@@ -3,8 +3,9 @@ import tensorflow as tf
 import numpy as np
 import argparse
 
-TRAINING_EPOCHS = 20000
+TRAINING_EPOCHS = 50000
 MINIBATCH_SIZE = 50
+SAVE_PATH = '/tmp/mnist-feedforward-model.cpkt'
 
 def neural_network(x):
     """Feedforward shallow neural network
@@ -60,22 +61,26 @@ def main(_):
     correct_prediction = tf.equal(tf.argmax(y_hat, 1), tf.argmax(y_true, 1))
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
+    saver = tf.train.Saver()
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
-        # saver = tf.train.Saver()
-        for i in range(TRAINING_EPOCHS):
-            batch = mnist.train.next_batch(MINIBATCH_SIZE)
-            if i % 100 == 0:
-                train_accuracy = accuracy.eval(feed_dict={
-                    x:batch[0], y_true: batch[1], keep_prob: 1.0
+        if FLAGS.no_cache:
+            for i in range(TRAINING_EPOCHS):
+                batch = mnist.train.next_batch(MINIBATCH_SIZE)
+                if i % 100 == 0:
+                    train_accuracy = accuracy.eval(feed_dict={
+                        x:batch[0], y_true: batch[1], keep_prob: 1.0
+                    })
+                    print('Training accuracy ({}/{}): {}'.format(
+                        i, TRAINING_EPOCHS, train_accuracy))
+                train_step.run(feed_dict={
+                    x: batch[0],
+                    y_true: batch[1],
+                    keep_prob: 0.5
                 })
-                print('Training accuracy ({}/{}): {}'.format(
-                    i, TRAINING_EPOCHS, train_accuracy))
-            train_step.run(feed_dict={
-                x: batch[0],
-                y_true: batch[1],
-                keep_prob: 0.5
-            })
+            saver.save(sess, SAVE_PATH)
+        else:
+            saver.restore(sess, SAVE_PATH)
 
         # Test our trained model
         print('Test accuracy: {}'.format(accuracy.eval(feed_dict={
@@ -84,10 +89,14 @@ def main(_):
             keep_prob: 1.0
         })))
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_dir', type=str,
                         default='/tmp/tensorflow/mnist/input_data',
                         help='Directory for storing input data')
+    parser.add_argument('--no_cache', type=bool,
+                        default=False,
+                        help='Set if want to train model from scratch')
     FLAGS, unparsed = parser.parse_known_args()
     tf.app.run(main=main)
