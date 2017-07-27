@@ -41,7 +41,7 @@ def main():
     print('done!')
     correct = evaluate(test_images, test_labels, thetas)
     print('{} correct out of {}: {}% accuracy'.format(
-            correct, 100 * TEST_SIZE, correct / TEST_SIZE))
+            correct, TEST_SIZE, correct / TEST_SIZE * 100))
 
     view_sample(10, test_images, test_labels, thetas)
 
@@ -170,8 +170,8 @@ def backprop(activations, labels, thetas):
     a1, a2, h = activations
     m = h.shape[0]
     delta3 = h - labels
-    delta2_nograd = theta2.T.dot(delta3.T)
-    delta2 = delta2_nograd.T * a2 * (1 - a2)
+    delta2_nograd = delta3.dot(theta2)# theta2.T.dot(delta3.T)
+    delta2 = delta2_nograd * a2 * (1 - a2)
     grad2 = (1 / m) * delta3.T.dot(a2)
     grad1 = (1 / m) * delta2.T.dot(a1)
 
