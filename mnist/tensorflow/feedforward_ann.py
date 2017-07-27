@@ -43,7 +43,7 @@ def weight_var(shape):
 
 def bias_var(shape):
     '''Wrapper for making a bias constant'''
-    return tf.constant(0.1, shape=shape)
+    return tf.Variable(tf.constant(0.1, shape=shape))
 
 
 def main(_):
